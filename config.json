@@ -1,0 +1,7 @@
+{
+  "apiUrl" : "http://api.pathofexile.com/public-stash-tabs",
+  "changeId" : "44608812-47403066-44164649-51503494-47879789",
+	"league"  : "Hardcore Breach",
+	"threshold" : 0.2,
+  "delay" : 5
+}

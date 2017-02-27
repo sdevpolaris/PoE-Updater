@@ -1,0 +1,22 @@
+{
+	"chromatic"  : 0.0625,
+	"alteration" : 0.0625,
+	"jeweller"   : 0.0833,
+	"chance" 		 : 0.125,
+	"chisel"     : 0.2,
+	"fusing"     : 0.333,
+	"alchemy"    : 0.2,
+	"scour"      : 0.5,
+	"blessed"    : 0.5,
+	"chaos"      : 1.0,
+	"regret"     : 1.0,
+	"regal"      : 1.0,
+	"gcp" 		   : 1.0,
+	"divine"     : 11.0,
+	"exa"    		 : 60.0,
+	"mirror"     : 4000.0,
+
+	"apprentice-sextant" : 2.5,
+	"journeyman-sextant" : 5.0,
+	"master-sextant"     : 9.0
+}
