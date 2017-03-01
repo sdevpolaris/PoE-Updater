@@ -9,5 +9,6 @@ CREATE TABLE currencyDeals (
   askingEquiv float(10),
   profit float(10),
   stock int,
-  note varchar(100)
+  note varchar(100),
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

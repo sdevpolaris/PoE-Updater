@@ -3,6 +3,7 @@ import time
 import gzip
 import urllib2
 import psycopg2
+import datetime
 from StringIO import StringIO
 
 class Indexer:
@@ -67,6 +68,20 @@ class Indexer:
     cursor.close()
     dbconn.close()
 
+  def removeOldDeals(self):
+    dbconn = psycopg2.connect("dbname=" + self.dbinfo['dbname'] +
+                             " user=" + self.dbinfo['username'] +
+                             " password= " + self.dbinfo['password'] +
+                             " host= " + self.dbinfo['host'] +
+                             " port=" + self.dbinfo['port'])
+
+    cursor = dbconn.cursor()
+
+    # Remove all rows in the table that were created more than 30 minutes ago
+    cursor.execute("DELETE FROM currencyDeals c WHERE created < CURRENT_TIMESTAMP - interval '30 minutes';")
+    dbconn.commit()
+    cursor.close()
+    dbconn.close()
 
   def processStashes(self, stashes):
     for stash in stashes:
@@ -76,6 +91,7 @@ class Indexer:
         # For each separate stash we need a stock object to keep count of every currency type
 
         stock = self.createBlankStock()
+        deals = []
 
         for item in items:
 
@@ -114,6 +130,7 @@ class Indexer:
                       print ''
                       print "Currency selling: " + currencyName + '    Note: ' + item['note']
                       print ' I pay: ' + str(askingChaosEquiv) + " and it's worth: " + str(offeringChaosEquiv) + '   profit: ' + str(offeringChaosEquiv - askingChaosEquiv)
+                      print ' stock: ' + str(stock[currencyName])
                       print '@' + stash['lastCharacterName'] + " Hi, I'd like to buy your " + str(values[1]) + ' ' + currencyName + ' for my ' + str(values[0]) + ' ' + askingCurrency + ' in ' + self.league
                       new_deal = {}
                       new_deal['league'] = self.league
@@ -125,14 +142,29 @@ class Indexer:
                       new_deal['offeringEquiv'] = offeringChaosEquiv
                       new_deal['askingEquiv'] = askingChaosEquiv
                       new_deal['profit'] = offeringChaosEquiv - askingChaosEquiv
-                      new_deal['stock'] = 1
+                      new_deal['stock'] = stock[currencyName]
                       new_deal['note'] = item['note']
-                      self.deals.append(new_deal)
+                      deals.append(new_deal)
+
+        for deal in deals:
+          deal['stock'] = stock[deal['currencyName']]
+        self.deals = self.deals + deals
 
   def index(self):
+    lastCleanoffTime = datetime.datetime.now()
     while True:
+      currentTime = datetime.datetime.now()
+      timeDiff = currentTime - lastCleanoffTime
+
+      # Every 1800 seconds or 30 minutes we would like to purge old currency deals
+
+      if timeDiff.total_seconds() > 1800:
+        self.removeOldDeals()
+        lastCleanoffTime = datetime.datetime.now()
+        print "Purged entries at : " + str(lastCleanoffTime)
+
       apiUrlModified = self.apiUrl if self.changeId == None else self.apiUrl + '?id=' + self.changeId
-      print apiUrlModified
+      print "Request: " + apiUrlModified
       request = urllib2.Request(apiUrlModified)
       request.add_header('Accept-encoding', 'gzip')
       resp = urllib2.urlopen(request)
@@ -154,7 +186,7 @@ class Indexer:
       if len(self.deals) > 0:
         self.storeDeals()
       self.deals = []
-      print "Ended session"
+      print "Ended request session"
       time.sleep(self.delay)
 
 instance = Indexer()
