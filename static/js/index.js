@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var autoRefreshEnabled = true;
+  var autoRefreshEnabled = false;
 
   function createDealTile(deal, list) {
     var _template = $('<div class="alert alert-success deal-row" role="alert"><div class="deal-info-section"><div id="league-note"></div><div id="equivalence"></div><div id="stock"></div><div id="charName"></div></div><input class="form-control purchase-msg-text" type="text" id="single-purchase-msg"><input class="form-control purchase-msg-text" type="text" id="stock-purchase-msg"></div>');
@@ -16,7 +16,7 @@
       $(this).select();
     });
 
-    var multiplier = deal['stock'] / deal['offeringamount'];
+    var multiplier = Math.floor(deal['stock'] / deal['offeringamount']);
     var multi_offeringamount = deal['offeringamount'] * multiplier;
     var multi_askingamount = deal['askingamount'] * multiplier;
 
@@ -25,20 +25,20 @@
       $(this).select();
     });
 
-    list.append(_template);
+    list.prepend(_template);
   }
 
   function reloadDealsList(result) {
     var dealsList = $('#deals-container');
-    dealsList.empty();
+    if (dealsList.children().length > 40) {
+      dealsList.children().slice(-20).remove();
+    }
     var deals = result;
     for (var i = 0; i < deals.length; i++) {
       var deal = deals[i][0]
       createDealTile(deal, dealsList);
     }
-    if (deals.length === 0) {
-      dealsList.html("There doesn't seem to be anything here...");
-    }
+    $('#refresh-spinner').addClass('hidden');
   }
 
   function requestLatest() {
@@ -48,13 +48,14 @@
         reloadDealsList(data);
       }
     });
+    $('#refresh-spinner').removeClass('hidden');
   }
 
   function requestLatestAuto() {
     if (autoRefreshEnabled) {
       requestLatest();
     }
-    setTimeout(requestLatestAuto, 10000);
+    setTimeout(requestLatestAuto, 30000);
   }
 
   $('#refresh').click(function() {

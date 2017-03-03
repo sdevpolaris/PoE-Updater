@@ -2,6 +2,7 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vendor/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vendor/font-awesome.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/jquery-3.1.1.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/bootstrap.min.js') }}"></script>
@@ -14,7 +15,7 @@
       </div>
       <div class="panel-body">
         <div class="alert alert-info" role="alert">
-          Currently Auto Refresh refreshes every 10 seconds.
+          Currently Auto Refresh refreshes every 30 seconds.
           <a href="https://github.com/sdevpolaris/PoE-Updater">Visit here the project on GitHub</a>
         </div>
         <ul class="nav nav-pills nav-justified" role="tab-list">
@@ -24,8 +25,10 @@
         <div class="tab-content">
           <div role="tabpanel" class="tab-pane fade in active" id="deals">
             <div class="panel panel-default">
+              <div class="hidden" id="refresh-spinner">
+                <i class="fa fa-spinner fa-spin"></i>
+              </div>
               <div class="panel-body" id="deals-container">
-                
               </div>
             </div>
           </div>
@@ -34,7 +37,7 @@
           </div>
         </div>
         <div class="btn-wrap">
-          <button id="auto-refresh" class="btn btn-primary left-btn">Disable Auto Refresh</button>
+          <button id="auto-refresh" class="btn btn-primary left-btn">Enable Auto Refresh</button>
           <button id="refresh" class="btn btn-primary">Refresh</button>
         </div>
       </div>

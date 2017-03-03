@@ -65,3 +65,13 @@
 .deal-info-section {
   padding-bottom: 15px;
 }
+
+/* General */
+
+.hidden {
+  display: none;
+}
+
+#refresh-spinner i {
+  font-size: 50px;
+}
