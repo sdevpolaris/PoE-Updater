@@ -186,7 +186,6 @@ class Indexer:
       if len(self.deals) > 0:
         self.storeDeals()
       self.deals = []
-      print "Ended request session"
       time.sleep(self.delay)
 
 instance = Indexer()

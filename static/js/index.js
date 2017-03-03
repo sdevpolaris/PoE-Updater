@@ -41,9 +41,9 @@
     $('#refresh-spinner').addClass('hidden');
   }
 
-  function requestLatest() {
+  function requestFeed(type) {
     $.ajax({
-      url: '/latest',
+      url: '/' + type,
       success: function(data) {
         reloadDealsList(data);
       }
@@ -53,13 +53,18 @@
 
   function requestLatestAuto() {
     if (autoRefreshEnabled) {
-      requestLatest();
+      requestFeed('latest');
     }
     setTimeout(requestLatestAuto, 30000);
   }
 
+  function requestInitFeed() {
+    requestFeed('init');
+    setTimeout(requestLatestAuto, 30000);
+  }
+
   $('#refresh').click(function() {
-    requestLatest();
+    requestFeed('latest');
   });
 
   $('#auto-refresh').click(function() {
@@ -71,6 +76,6 @@
     autoRefreshEnabled = !autoRefreshEnabled;
   });
 
-  requestLatestAuto();
+  requestInitFeed();
   
 })();
