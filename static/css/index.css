@@ -41,7 +41,7 @@
 }
 
 .alert {
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 /* Save and reload buttons */
@@ -51,11 +51,16 @@
   text-align: right;
 }
 
-.options-btn {
+.left-btn {
   float: left;
 }
 
 /* Deals */
+
+#deals {
+  margin-top: 20px;
+  text-align: center;
+}
 
 .deal-info-section {
   padding-bottom: 15px;
