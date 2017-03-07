@@ -41,6 +41,11 @@ class Indexer:
       stock[self.currency_names[key]] = 0
     return stock
 
+  def dealExists(self, cursor, deal):
+    cursor.execute("SELECT * from currencyDeals where charName = %s and currencyName = %s and stock = %s and note = %s",
+      (deal['charName'], deal['currencyName'], deal['stock'], deal['note']))
+    return cursor.fetchone() is not None
+
   def storeDeals(self):
     dbconn = psycopg2.connect("dbname=" + self.dbinfo['dbname'] +
                              " user=" + self.dbinfo['username'] +
@@ -50,19 +55,20 @@ class Indexer:
 
     cursor = dbconn.cursor()
     for deal in self.deals:
-      cursor.execute("""INSERT INTO currencyDeals (league, charName, currencyName, offeringAmount, askingCurrency, askingAmount, offeringEquiv, askingEquiv, profit, stock, note)
-                  VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
-                  (deal['league'],
-                   deal['charName'],
-                   deal['currencyName'],
-                   deal['offeringAmount'],
-                   deal['askingCurrency'],
-                   deal['askingAmount'],
-                   deal['offeringEquiv'],
-                   deal['askingEquiv'],
-                   deal['profit'],
-                   deal['stock'],
-                   deal['note']))
+      if not self.dealExists(cursor, deal):
+        cursor.execute("""INSERT INTO currencyDeals (league, charName, currencyName, offeringAmount, askingCurrency, askingAmount, offeringEquiv, askingEquiv, profit, stock, note)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                    (deal['league'],
+                     deal['charName'],
+                     deal['currencyName'],
+                     deal['offeringAmount'],
+                     deal['askingCurrency'],
+                     deal['askingAmount'],
+                     deal['offeringEquiv'],
+                     deal['askingEquiv'],
+                     deal['profit'],
+                     deal['stock'],
+                     deal['note']))
 
     dbconn.commit()
     cursor.close()
