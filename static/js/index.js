@@ -4,6 +4,8 @@
 
   var autoRefreshEnabled = false;
 
+  var notifySound = document.getElementById('notifySound');
+
   function createDealTile(deal, list) {
     var _template = $('<div class="alert alert-success deal-row" role="alert"><div class="deal-info-section"><div id="league-note"></div><div id="equivalence"></div><div id="stock"></div><div id="charName"></div></div><input class="form-control purchase-msg-text" type="text" id="single-purchase-msg"><input class="form-control purchase-msg-text" type="text" id="stock-purchase-msg"></div>');
     $('#league-note', _template).html('League: ' + deal['league'] + ', Currency: ' + deal['currencyname'] + ', Note: ' + deal['note']);
@@ -39,6 +41,10 @@
       createDealTile(deal, dealsList);
     }
     $('#refresh-spinner').addClass('hidden');
+
+    if (deals.length > 0) {
+      notifySound.play(); 
+    }
   }
 
   function requestFeed(type) {
@@ -55,12 +61,12 @@
     if (autoRefreshEnabled) {
       requestFeed('latest');
     }
-    setTimeout(requestLatestAuto, 30000);
+    setTimeout(requestLatestAuto, 10000);
   }
 
   function requestInitFeed() {
     requestFeed('init');
-    setTimeout(requestLatestAuto, 30000);
+    setTimeout(requestLatestAuto, 10000);
   }
 
   $('#refresh').click(function() {

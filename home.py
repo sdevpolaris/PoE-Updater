@@ -20,7 +20,7 @@ def latest():
                              " host= " + dbinfo['host'] +
                              " port=" + dbinfo['port'])
   cursor = dbconn.cursor()
-  cursor.execute("SELECT row_to_json(c) FROM currencyDeals c WHERE c.created > CURRENT_TIMESTAMP - interval '30 seconds';")
+  cursor.execute("SELECT row_to_json(c) FROM currencyDeals c WHERE c.created > CURRENT_TIMESTAMP - interval '10 seconds';")
   result = cursor.fetchall()
   cursor.close()
   dbconn.close()
