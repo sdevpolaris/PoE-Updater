@@ -7,7 +7,7 @@
   var notifySound = document.getElementById('notifySound');
 
   function createDealTile(deal, list) {
-    var _template = $('<div class="alert alert-success deal-row" role="alert"><div class="deal-info-section"><div id="league-note"></div><div id="equivalence"></div><div id="stock"></div><div id="charName"></div></div><input class="form-control purchase-msg-text" type="text" id="single-purchase-msg"><input class="form-control purchase-msg-text" type="text" id="stock-purchase-msg"></div>');
+    var _template = $('<div class="alert alert-success deal-row" role="alert"><i id="closeDeal" class="fa fa-times left-btn" aria-hidden="true"></i><div class="deal-info-section"><div id="league-note"></div><div id="equivalence"></div><div id="stock"></div><div id="charName"></div></div><input class="form-control purchase-msg-text" type="text" id="single-purchase-msg"><input class="form-control purchase-msg-text" type="text" id="stock-purchase-msg"></div>');
     $('#league-note', _template).html('League: ' + deal['league'] + ', Currency: ' + deal['currencyname'] + ', Note: ' + deal['note']);
     $('#equivalence', _template).html('Paying: ' + deal['askingamount'] + ' ' + deal['askingcurrency'] + ' (' + deal['askingequiv'] + 'c), Getting: ' + deal['offeringamount'] + ' ' + deal['currencyname'] + ' (' + deal['offeringequiv'] + 'c), Profit: ' + deal['profit'] + 'c');
     $('#stock', _template).html('Stock: ' + deal['stock'] + ' ' + deal['currencyname']);
@@ -25,6 +25,10 @@
     $('#stock-purchase-msg', _template).val("@" + deal['charname'] + " Hi, I'd like to buy your " + multi_offeringamount + " " + deal['currencyname'] + " for my " + multi_askingamount + " " + deal['askingcurrency'] + " in " + deal['league'] + ".");
     $('#stock-purchase-msg', _template).on("click", function() {
       $(this).select();
+    });
+
+    $('#closeDeal', _template).on('click', function() {
+      _template.remove();
     });
 
     list.prepend(_template);
@@ -66,12 +70,12 @@
     if (autoRefreshEnabled) {
       requestFeed('latest');
     }
-    setTimeout(requestLatestAuto, 10000);
+    setTimeout(requestLatestAuto, 20000);
   }
 
   function requestInitFeed() {
     requestFeed('init');
-    setTimeout(requestLatestAuto, 10000);
+    setTimeout(requestLatestAuto, 20000);
   }
 
   $('#refresh').click(function() {
