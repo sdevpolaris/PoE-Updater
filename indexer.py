@@ -6,6 +6,8 @@ import psycopg2
 import datetime
 from StringIO import StringIO
 
+DEBUG = False
+
 class Indexer:
   def __init__(self):
 
@@ -132,12 +134,14 @@ class Indexer:
                     askingChaosEquiv = self.currency_rates[askingCurrency] * float(values[0])
                     offeringChaosEquiv = self.currency_rates[currencyName] * float(values[1])
                     if offeringChaosEquiv > askingChaosEquiv:
-                      print ''
-                      print ''
-                      print "Currency selling: " + currencyName + '    Note: ' + item['note']
-                      print ' I pay: ' + str(askingChaosEquiv) + " and it's worth: " + str(offeringChaosEquiv) + '   profit: ' + str(offeringChaosEquiv - askingChaosEquiv)
-                      print ' stock: ' + str(stock[currencyName])
-                      print '@' + stash['lastCharacterName'] + " Hi, I'd like to buy your " + str(values[1]) + ' ' + currencyName + ' for my ' + str(values[0]) + ' ' + askingCurrency + ' in ' + self.league
+
+                      if DEBUG:
+                        print ''
+                        print ''
+                        print "Currency selling: " + currencyName + '    Note: ' + item['note']
+                        print ' I pay: ' + str(askingChaosEquiv) + " and it's worth: " + str(offeringChaosEquiv) + '   profit: ' + str(offeringChaosEquiv - askingChaosEquiv)
+                        print ' stock: ' + str(stock[currencyName])
+                        print '@' + stash['lastCharacterName'] + " Hi, I'd like to buy your " + str(values[1]) + ' ' + currencyName + ' for my ' + str(values[0]) + ' ' + askingCurrency + ' in ' + self.league
                       new_deal = {}
                       new_deal['league'] = self.league
                       new_deal['charName'] = stash['lastCharacterName']
@@ -170,7 +174,8 @@ class Indexer:
         print "Purged entries at : " + str(lastCleanoffTime)
 
       apiUrlModified = self.apiUrl if self.changeId == None else self.apiUrl + '?id=' + self.changeId
-      print "Request: " + apiUrlModified
+      if DEBUG:
+        print "Request: " + apiUrlModified
       request = urllib2.Request(apiUrlModified)
       request.add_header('Accept-encoding', 'gzip')
       resp = urllib2.urlopen(request)
