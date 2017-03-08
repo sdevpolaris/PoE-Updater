@@ -35,16 +35,21 @@
     if (dealsList.children().length > 40) {
       dealsList.children().slice(-20).remove();
     }
+
     var deals = result;
+
+    if (deals.length > 0) {
+      notifySound.play();
+      var separator = $('<hr />');
+      dealsList.prepend(separator);
+    }
+
     for (var i = 0; i < deals.length; i++) {
       var deal = deals[i][0]
       createDealTile(deal, dealsList);
     }
-    $('#refresh-spinner').addClass('hidden');
 
-    if (deals.length > 0) {
-      notifySound.play(); 
-    }
+    $('#refresh-spinner').addClass('hidden');
   }
 
   function requestFeed(type) {

@@ -75,3 +75,8 @@
 #refresh-spinner i {
   font-size: 50px;
 }
+
+hr {
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
