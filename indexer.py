@@ -125,6 +125,11 @@ class Indexer:
                   # If there is no second value, then it means seller is only selling one of the currency type
 
                   if len(values) == 1:
+
+                    # Ignore any false deals, aka asking for 0 currencies
+
+                    if int(values[0]) == 0:
+                      continue
                     values.append(1)
                   askingCurrency = notes[2]
                   if askingCurrency in self.currency_rates:
@@ -133,7 +138,7 @@ class Indexer:
 
                     askingChaosEquiv = self.currency_rates[askingCurrency] * float(values[0])
                     offeringChaosEquiv = self.currency_rates[currencyName] * float(values[1])
-                    if offeringChaosEquiv > askingChaosEquiv:
+                    if (offeringChaosEquiv > askingChaosEquiv) and (offeringChaosEquiv - askingChaosEquiv > self.threshold):
 
                       if DEBUG:
                         print ''
