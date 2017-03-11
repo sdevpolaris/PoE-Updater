@@ -112,7 +112,13 @@ class Indexer:
             typeLine = item['typeLine']
             if typeLine in self.currency_names:
               currencyName = self.currency_names[typeLine]
-              stock[currencyName] += item['stackSize']
+
+              # Some items do not have a stack size, default to 1
+
+              stackSize = 1
+              if item['stackSize']:
+                stackSize = item['stackSize']
+              stock[currencyName] += stackSize
               if 'note' in item:
                 notes = item['note'].split(' ')
 
@@ -128,7 +134,7 @@ class Indexer:
 
                     # Ignore any false deals, aka asking for 0 currencies
 
-                    if int(values[0]) == 0:
+                    if float(values[0]) == 0.0:
                       continue
                     values.append(1)
                   askingCurrency = notes[2]

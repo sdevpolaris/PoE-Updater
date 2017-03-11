@@ -1,21 +1,29 @@
 {
   "chromatic"  : 0.07142,
   "alteration" : 0.05,
-  "jeweller"   : 0.07142,
+  "jeweller"   : 0.0769,
   "chance"     : 0.125,
   "chisel"     : 0.2,
-  "fusing"     : 0.29411,
+  "fusing"     : 0.3333,
   "alchemy"    : 0.2,
   "scour"      : 0.5,
   "blessed"    : 0.5,
   "chaos"      : 1.0,
   "regret"     : 0.7142,
   "regal"      : 1.25,
-  "gcp"        : 0.9,
+  "gcp"        : 1.0,
   "divine"     : 5.0,
   "exa"        : 22.0,
   "mirror"     : 4000.0,
   "apprentice-sextant" : 1.0,
   "journeyman-sextant" : 3.0,
-  "master-sextant"     : 7.0
+  "master-sextant"     : 6.0,
+
+  "offer"  : 3,
+  "silver" : 0.1667,
+
+  "coin"  : 0.0033,
+  "coins" : 0.0033,
+  "shekel" : 0.0033,
+  "perandus" : 0.0033
 }
