@@ -1,7 +1,7 @@
 {
   "apiUrl" : "http://api.pathofexile.com/public-stash-tabs",
-  "changeId" : "45196594-48004493-44727068-52138704-48493075",
-  "league"  : "Hardcore",
+  "ninjaApiUrl" : "http://api.poe.ninja/api/Data/GetStats",
+  "league"  : "Hardcore Legacy",
   "threshold" : 0.2,
-  "delay" : 4
+  "delay" : 3
 }

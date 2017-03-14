@@ -16,7 +16,8 @@ class Indexer:
     with open('config.json') as config_file:
       configs = json.load(config_file)
       self.apiUrl = configs['apiUrl']
-      self.changeId = configs['changeId']
+      self.changeId = None
+      self.ninjaApiUrl = configs['ninjaApiUrl']
       self.league = configs['league']
       self.threshold = configs['threshold']
       self.delay = configs['delay']
@@ -36,6 +37,19 @@ class Indexer:
       self.dbinfo = json.load(db_file)
 
     self.deals = []
+
+    # Request for the latest changeId from poe.ninja
+
+    request = urllib2.Request(self.ninjaApiUrl)
+    resp = urllib2.urlopen(request)
+    status = resp.getcode()
+    if status == 200:
+      ninjaJson = json.load(resp)
+      self.changeId = ninjaJson['nextChangeId']
+
+      # Start indexing
+
+      self.index()
 
   def createBlankStock(self):
     stock = {}
@@ -211,4 +225,3 @@ class Indexer:
       time.sleep(self.delay)
 
 instance = Indexer()
-instance.index()
