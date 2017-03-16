@@ -4,6 +4,7 @@ import gzip
 import urllib2
 import psycopg2
 import datetime
+import math
 from StringIO import StringIO
 
 DEBUG = False
@@ -18,8 +19,10 @@ class Indexer:
       self.apiUrl = configs['apiUrl']
       self.changeId = None
       self.ninjaApiUrl = configs['ninjaApiUrl']
+      self.ninjaRatesUrl = configs['ninjaRatesUrl']
       self.league = configs['league']
-      self.threshold = configs['threshold']
+      self.thresholdSmall = configs['thresholdSmall']
+      self.thresholdLarge = configs['thresholdLarge']
       self.delay = configs['delay']
 
     # Read predefined market rates for currency (Sell values)
@@ -38,6 +41,14 @@ class Indexer:
 
     self.deals = []
 
+    # Request for the latest rates
+
+    self.updateWithNinjaRates()
+
+    # Update rates that have shared keys
+
+    self.updateSharedCurrencyRates()
+
     # Request for the latest changeId from poe.ninja
 
     request = urllib2.Request(self.ninjaApiUrl)
@@ -50,6 +61,23 @@ class Indexer:
       # Start indexing
 
       self.index()
+
+  def updateSharedCurrencyRates(self):
+    sharedPerandus = ['coins', 'shekel', 'perandus']
+    for shared in sharedPerandus:
+      self.currency_rates[shared] = self.currency_rates['coin']
+
+  def updateWithNinjaRates(self):
+    request = urllib2.Request(self.ninjaRatesUrl)
+    resp = urllib2.urlopen(request)
+    status = resp.getcode()
+    if status == 200:
+      ratesJson = json.load(resp)
+
+      for line in ratesJson['lines']:
+        currencyTypeName = line['currencyTypeName']
+        if (currencyTypeName in self.currency_names) and line['receive']:
+          self.currency_rates[self.currency_names[currencyTypeName]] = line['receive']['value']
 
   def createBlankStock(self):
     stock = {}
@@ -158,7 +186,16 @@ class Indexer:
 
                     askingChaosEquiv = self.currency_rates[askingCurrency] * float(values[0])
                     offeringChaosEquiv = self.currency_rates[currencyName] * float(values[1])
-                    if (offeringChaosEquiv > askingChaosEquiv) and (offeringChaosEquiv - askingChaosEquiv > self.threshold):
+
+                    # Our profiting threshold is dependent on the type of currencies exchanging. Large currencies = higher thresholds for solidifying profit and likewise.
+
+                    threshold = 0.0
+                    if math.fabs(self.currency_rates[askingCurrency] - self.currency_rates[currencyName]) > 4.0:
+                      threshold = self.thresholdLarge
+                    else:
+                      threshold = self.thresholdSmall
+
+                    if (offeringChaosEquiv > askingChaosEquiv) and (offeringChaosEquiv - askingChaosEquiv > threshold):
 
                       if DEBUG:
                         print ''
