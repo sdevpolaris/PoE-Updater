@@ -7,7 +7,13 @@ import datetime
 import math
 from StringIO import StringIO
 
-DEBUG = False
+def isfloat(values):
+  try:
+    for value in values:
+      float(value)
+    return True
+  except ValueError:
+    return False
 
 class Indexer:
   def __init__(self):
@@ -169,6 +175,9 @@ class Indexer:
                 if len(notes) == 3 and (notes[0] == '~b/o' or notes[0] == '~price'):
                   values = notes[1].split('/')
 
+                  if not isfloat(values):
+                    continue
+
                   # First value is the amount of currency buyer needs to give, second value is the amount of currency seller needs to sell off
                   # If there is no second value, then it means seller is only selling one of the currency type
 
@@ -196,14 +205,6 @@ class Indexer:
                       threshold = self.thresholdSmall
 
                     if (offeringChaosEquiv > askingChaosEquiv) and (offeringChaosEquiv - askingChaosEquiv > threshold):
-
-                      if DEBUG:
-                        print ''
-                        print ''
-                        print "Currency selling: " + currencyName + '    Note: ' + item['note']
-                        print ' I pay: ' + str(askingChaosEquiv) + " and it's worth: " + str(offeringChaosEquiv) + '   profit: ' + str(offeringChaosEquiv - askingChaosEquiv)
-                        print ' stock: ' + str(stock[currencyName])
-                        print '@' + stash['lastCharacterName'] + " Hi, I'd like to buy your " + str(values[1]) + ' ' + currencyName + ' for my ' + str(values[0]) + ' ' + askingCurrency + ' in ' + self.league
                       new_deal = {}
                       new_deal['league'] = self.league
                       new_deal['charName'] = stash['lastCharacterName']
@@ -236,8 +237,6 @@ class Indexer:
         print "Purged entries at : " + str(lastCleanoffTime)
 
       apiUrlModified = self.apiUrl if self.changeId == None else self.apiUrl + '?id=' + self.changeId
-      if DEBUG:
-        print "Request: " + apiUrlModified
       request = urllib2.Request(apiUrlModified)
       request.add_header('Accept-encoding', 'gzip')
       resp = urllib2.urlopen(request)
@@ -255,6 +254,8 @@ class Indexer:
           self.processStashes(stashes)
       else:
         print "Connection failed. Retrying"
+
+      # Store deals that were found in the current batch of stash tab data
 
       if len(self.deals) > 0:
         self.storeDeals()
