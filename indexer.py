@@ -31,6 +31,8 @@ class Indexer:
       self.thresholdLarge = configs['thresholdLarge']
       self.delay = configs['delay']
 
+    self.currentDate = time.strftime('%Y-%m-%d', time.gmtime())
+
     # Read predefined market rates for currency (Sell values)
 
     with open('currency_rates.json') as rates_file:
@@ -74,12 +76,12 @@ class Indexer:
       self.currency_rates[shared] = self.currency_rates['coin']
 
   def updateWithNinjaRates(self):
-    request = urllib2.Request(self.ninjaRatesUrl)
+    ratesUrlModified = self.ninjaRatesUrl + self.currentDate
+    request = urllib2.Request(ratesUrlModified)
     resp = urllib2.urlopen(request)
     status = resp.getcode()
     if status == 200:
       ratesJson = json.load(resp)
-
       for line in ratesJson['lines']:
         currencyTypeName = line['currencyTypeName']
         if (currencyTypeName in self.currency_names) and line['receive']:
