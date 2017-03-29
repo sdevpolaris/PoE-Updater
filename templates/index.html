@@ -41,6 +41,16 @@
           <button id="auto-refresh" class="btn btn-primary left-btn">Enable Auto Refresh</button>
           <button id="refresh" class="btn btn-primary">Refresh</button>
         </div>
+        <div id="currencyDealTile" class="alert alert-success deal-row hidden" role="alert">
+          <i id="closeDeal" class="fa fa-times right-btn" aria-hidden="true"></i>
+          <div class="deal-info-section">
+            <div id="league-note"></div>
+            <div id="equivalence"></div>
+            <div id="stock"></div>
+            <div id="charName"></div></div>
+            <input class="form-control purchase-msg-text" type="text" id="single-purchase-msg">
+            <input class="form-control purchase-msg-text" type="text" id="stock-purchase-msg">
+        </div>
       </div>
     </div>
     <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
