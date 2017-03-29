@@ -27,8 +27,7 @@ class Indexer:
       self.ninjaApiUrl = configs['ninjaApiUrl']
       self.ninjaRatesUrl = configs['ninjaRatesUrl']
       self.league = configs['league']
-      self.thresholdSmall = configs['thresholdSmall']
-      self.thresholdLarge = configs['thresholdLarge']
+      self.threshold = configs['threshold']
       self.delay = configs['delay']
 
     self.currentDate = time.strftime('%Y-%m-%d', time.gmtime())
@@ -198,15 +197,7 @@ class Indexer:
                     askingChaosEquiv = self.currency_rates[askingCurrency] * float(values[0])
                     offeringChaosEquiv = self.currency_rates[currencyName] * float(values[1])
 
-                    # Our profiting threshold is dependent on the type of currencies exchanging. Large currencies = higher thresholds for solidifying profit and likewise.
-
-                    threshold = 0.0
-                    if math.fabs(self.currency_rates[askingCurrency] - self.currency_rates[currencyName]) > 4.0:
-                      threshold = self.thresholdLarge
-                    else:
-                      threshold = self.thresholdSmall
-
-                    if (offeringChaosEquiv > askingChaosEquiv) and (offeringChaosEquiv - askingChaosEquiv > threshold):
+                    if (offeringChaosEquiv > askingChaosEquiv) and (offeringChaosEquiv - askingChaosEquiv >= self.threshold):
                       new_deal = {}
                       new_deal['league'] = self.league
                       new_deal['charName'] = stash['lastCharacterName']

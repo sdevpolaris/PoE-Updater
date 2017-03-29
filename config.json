@@ -3,7 +3,6 @@
   "ninjaApiUrl" : "http://api.poe.ninja/api/Data/GetStats",
   "ninjaRatesUrl" : "http://api.poe.ninja/api/Data/GetCurrencyOverview?league=Hardcore%20Legacy&date=",
   "league"  : "Hardcore Legacy",
-  "thresholdSmall" : 0.2,
-  "thresholdLarge" : 1.0,
+  "threshold" : 1.0,
   "delay" : 2
 }
