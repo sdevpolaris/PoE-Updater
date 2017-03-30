@@ -42,11 +42,17 @@ class Indexer:
     with open('currency_names.json') as names_file:
       self.currency_names = json.load(names_file)
 
+    # Read predefined leaguestone rates
+
+    with open('leaguestones.json') as stones_file:
+      self.leaguestones = json.load(stones_file)
+
     # Read database info
     with open('dbinfo.json') as db_file:
       self.dbinfo = json.load(db_file)
 
     self.deals = []
+    self.itemDeals = []
 
     # Request for the latest rates
 
@@ -97,7 +103,15 @@ class Indexer:
       (deal['charName'], deal['currencyName'], deal['stock'], deal['note']))
     return cursor.fetchone() is not None
 
+  def itemDealExists(self, cursor, deal):
+    cursor.execute("SELECT * from itemDeals where charName = %s and itemName = %s and stashName = %s and x = %s and y = %s",
+      (deal['charName'], deal['itemName'], deal['stashName'], deal['x'], deal['y']))
+    return cursor.fetchone() is not None
+
   def storeDeals(self):
+    if len(self.deals) == 0 and len(self.itemDeals) == 0:
+      return
+
     dbconn = psycopg2.connect("dbname=" + self.dbinfo['dbname'] +
                              " user=" + self.dbinfo['username'] +
                              " password= " + self.dbinfo['password'] +
@@ -121,9 +135,28 @@ class Indexer:
                      deal['stock'],
                      deal['note']))
 
+    for deal in self.itemDeals:
+      if not self.itemDealExists(cursor, deal):
+        cursor.execute("""INSERT INTO itemDeals (league, charName, itemName, mods, askingPrice, avgPrice, profit, stock, note, stashName, x, y)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                    (deal['league'],
+                     deal['charName'],
+                     deal['itemName'],
+                     deal['mods'],
+                     deal['askingPrice'],
+                     deal['avgPrice'],
+                     deal['profit'],
+                     deal['stock'],
+                     deal['note'],
+                     deal['stashName'],
+                     deal['x'],
+                     deal['y']))
+
     dbconn.commit()
     cursor.close()
     dbconn.close()
+    self.deals = []
+    self.itemDeals = []
 
   def removeOldDeals(self):
     dbconn = psycopg2.connect("dbname=" + self.dbinfo['dbname'] +
@@ -136,9 +169,90 @@ class Indexer:
 
     # Remove all rows in the table that were created more than 30 minutes ago
     cursor.execute("DELETE FROM currencyDeals c WHERE created < CURRENT_TIMESTAMP - interval '30 minutes';")
+    cursor.execute("DELETE FROM itemDeals c WHERE created < CURRENT_TIMESTAMP - interval '30 minutes';")
     dbconn.commit()
     cursor.close()
     dbconn.close()
+
+  def processLeaguestone(self, typeLine, stash, item, itemDeals):
+    typeLineTokens = typeLine.split(' ')
+    typeIndex = typeLineTokens.index('Leaguestone')
+    leaguestoneType = typeLineTokens[typeIndex - 1] + ' ' + 'Leaguestone'
+
+    if leaguestoneType in self.leaguestones:
+      if 'note' in item:
+        notes = item['note'].split(' ')
+
+        # Only care about buyouts or fixed priced items, and only chaos orb buyouts
+
+        if len(notes) == 3 and (notes[0] == '~b/o' or notes[0] == '~price') and notes[2] == 'chaos':
+          askingPrice = notes[1]
+
+          if not isfloat(askingPrice):
+            return
+
+          if float(askingPrice) == 0.0:
+            return
+
+          # Modifying properties so that placeholder %x strings are replaced with actual values
+
+          modifiedProperties = []
+          for prop in item['properties']:
+
+            # If the leaguestones have these mods, skip them
+
+            if prop['name'].startswith('Can only be used in Areas with Monster Level') and prop['name'].endswith('or below'):
+              return
+            if prop['name'].startswith('Can only be used in Areas with Monster Level between'):
+              return
+
+            propString = ''
+            if 'values' in prop and len(prop['values']) > 0:
+              nameTokens = prop['name'].split(' ')
+              modTokens = []
+              index = 0
+              for token in nameTokens:
+                if token.startswith('%'):
+                  modTokens.append(prop['values'][index][0])
+                  index += 1
+                else:
+                  modTokens.append(token)
+              propString = ' '.join(modTokens)
+            else:
+              propString = prop['name']
+            modifiedProperties.append(propString)
+
+          # Mod object will contain all modifiers information on the item
+
+          mods = {}
+          mods['implicitMods'] = item['implicitMods']
+          mods['properties'] = modifiedProperties
+          if 'explicitMods' in item:
+            mods['explicitMods'] = item['explicitMods']
+
+          # Remove the added string in typeLine if it exists
+
+          typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
+          if typeLine.startswith(typeLinePrefix):
+            typeLine = typeLine[len(typeLinePrefix):]
+
+          askingPrice = float(askingPrice)
+          avgPrice = self.leaguestones[leaguestoneType]
+          if askingPrice <= avgPrice:
+            new_deal = {}
+            new_deal['league'] = self.league
+            new_deal['charName'] = stash['lastCharacterName']
+            new_deal['itemName'] = typeLine
+            new_deal['mods'] = json.dumps(mods)
+            new_deal['askingPrice'] = askingPrice
+            new_deal['avgPrice'] = avgPrice
+            new_deal['profit'] = avgPrice - askingPrice
+            new_deal['stock'] = 1
+            new_deal['note'] = item['note']
+            new_deal['stashName'] = stash['stash']
+            new_deal['x'] = item['x'] + 1
+            new_deal['y'] = item['y'] + 1
+            self.itemDeals.append(new_deal)
 
   def processStashes(self, stashes):
     for stash in stashes:
@@ -149,6 +263,7 @@ class Indexer:
 
         stock = self.createBlankStock()
         deals = []
+        itemDeals = []
 
         for item in items:
 
@@ -159,6 +274,8 @@ class Indexer:
             # typeLine is the displaying name of the item, in this case the currency's official name in-game
 
             typeLine = item['typeLine']
+            if 'Leaguestone' in typeLine:
+              self.processLeaguestone(typeLine, stash, item, itemDeals)
             if typeLine in self.currency_names:
               currencyName = self.currency_names[typeLine]
 
@@ -249,10 +366,8 @@ class Indexer:
         print "Connection failed. Retrying"
 
       # Store deals that were found in the current batch of stash tab data
+      self.storeDeals()
 
-      if len(self.deals) > 0:
-        self.storeDeals()
-      self.deals = []
       time.sleep(self.delay)
 
 instance = Indexer()
