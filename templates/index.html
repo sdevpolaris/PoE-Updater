@@ -51,6 +51,16 @@
             <input class="form-control purchase-msg-text" type="text" id="single-purchase-msg">
             <input class="form-control purchase-msg-text" type="text" id="stock-purchase-msg">
         </div>
+        <div id="itemDealTile" class="alert alert-info deal-row hidden" role="alert">
+          <i id="closeDeal" class="fa fa-times right-btn" aria-hidden="true"></i>
+          <div class="deal-info-section">
+            <div id="league-note"></div>
+            <div id="item"></div>
+            <div id="mods"></div>
+            <div id="price"></div>
+            <div id="stock"></div>
+            <input class="form-control purchase-msg-text" type="text" id="single-purchase-msg">
+        </div>
       </div>
     </div>
     <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>

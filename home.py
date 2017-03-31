@@ -21,10 +21,12 @@ def latest():
                              " port=" + dbinfo['port'])
   cursor = dbconn.cursor()
   cursor.execute("SELECT row_to_json(c) FROM currencyDeals c WHERE c.created > CURRENT_TIMESTAMP - interval '21 seconds';")
-  result = cursor.fetchall()
+  currencies = cursor.fetchall()
+  cursor.execute("SELECT row_to_json(c) FROM itemDeals c WHERE c.created > CURRENT_TIMESTAMP - interval '21 seconds';")
+  items = cursor.fetchall()
   cursor.close()
   dbconn.close()
-  return jsonify(result)
+  return jsonify(currencies=currencies, items=items)
 
 @app.route('/init')
 def initfeed():
@@ -35,10 +37,12 @@ def initfeed():
                              " port=" + dbinfo['port'])
   cursor = dbconn.cursor()
   cursor.execute("SELECT row_to_json(c) FROM currencyDeals c WHERE c.created > CURRENT_TIMESTAMP - interval '10 minutes';")
-  result = cursor.fetchall()
+  currencies = cursor.fetchall()
+  cursor.execute("SELECT row_to_json(c) FROM itemDeals c WHERE c.created > CURRENT_TIMESTAMP - interval '10 minutes';")
+  items = cursor.fetchall()
   cursor.close()
   dbconn.close()
-  return jsonify(result)
+  return jsonify(currencies=currencies, items=items)
 
 if __name__ == "__main__":
   app.run()

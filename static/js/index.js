@@ -6,7 +6,29 @@
 
   var notifySound = document.getElementById('notifySound');
 
-  function createDealTile(deal, list) {
+  function createItemDealTile(deal, list) {
+    var _template = $('#itemDealTile').clone();
+    _template.removeAttr('id');
+    _template.removeClass('hidden');
+    $('#league-note', _template).html('League: ' + deal['league'] + ', Character Name: ' + deal['charname']);
+    $('#item', _template).html(deal['itemname']);
+    $('#mods', _template).html(deal['mods']);
+    $('#price', _template).html('Price: ' + deal['askingprice'] + ' , Market: ' + deal['avgprice'] + ' , Profit: ' + deal['profit']);
+    $('#stock', _template).html('Stacksize: ' + deal['stock']);
+
+    $('#single-purchase-msg', _template).val('@' + deal['charname'] + ' Hi, I would like to buy your ' + deal['itemname'] + ' in ' + deal['league'] + ' (stash tab "' + deal['stashname'] + '"; position: left ' + deal['x'] + ', top ' + deal['y'] + ')');
+    $('#single-purchase-msg', _template).on("click", function() {
+      $(this).select();
+    });
+
+    $('#closeDeal', _template).on('click', function() {
+      _template.remove();
+    });
+
+    list.prepend(_template);
+  }
+
+  function createCurrencyDealTile(deal, list) {
     var _template = $('#currencyDealTile').clone();
     _template.removeAttr('id');
     _template.removeClass('hidden');
@@ -42,17 +64,23 @@
       dealsList.children().slice(-20).remove();
     }
 
-    var deals = result;
+    var currencyDeals = result['currencies'];
+    var itemDeals = result['items'];
 
-    if (deals.length > 0) {
+    if (currencyDeals.length > 0 || itemDeals.length > 0) {
       notifySound.play();
       var separator = $('<hr />');
       dealsList.prepend(separator);
     }
 
-    for (var i = 0; i < deals.length; i++) {
-      var deal = deals[i][0]
-      createDealTile(deal, dealsList);
+    for (var i = 0; i < currencyDeals.length; i++) {
+      var deal = currencyDeals[i][0]
+      createCurrencyDealTile(deal, dealsList);
+    }
+
+    for (var j = 0; j < itemDeals.length; j++) {
+      var deal = itemDeals[j][0]
+      createItemDealTile(deal, dealsList);
     }
 
     $('#refresh-spinner').addClass('hidden');
