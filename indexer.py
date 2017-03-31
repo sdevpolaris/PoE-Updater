@@ -30,8 +30,6 @@ class Indexer:
       self.threshold = configs['threshold']
       self.delay = configs['delay']
 
-    self.currentDate = time.strftime('%Y-%m-%d', time.gmtime())
-
     # Read predefined market rates for currency (Sell values)
 
     with open('currency_rates.json') as rates_file:
@@ -70,6 +68,7 @@ class Indexer:
     if status == 200:
       ninjaJson = json.load(resp)
       self.changeId = ninjaJson['nextChangeId']
+      print "ChangeId received from poe.ninja: " + self.changeId
 
       # Start indexing
 
@@ -81,6 +80,7 @@ class Indexer:
       self.currency_rates[shared] = self.currency_rates['coin']
 
   def updateWithNinjaRates(self):
+    self.currentDate = time.strftime('%Y-%m-%d', time.gmtime())
     ratesUrlModified = self.ninjaRatesUrl + self.currentDate
     request = urllib2.Request(ratesUrlModified)
     resp = urllib2.urlopen(request)
@@ -91,6 +91,7 @@ class Indexer:
         currencyTypeName = line['currencyTypeName']
         if (currencyTypeName in self.currency_names) and line['receive']:
           self.currency_rates[self.currency_names[currencyTypeName]] = line['receive']['value']
+      print "Updated currency rates with poe.ninja at: " + str(datetime.datetime.now())
 
   def createBlankStock(self):
     stock = {}
@@ -335,16 +336,18 @@ class Indexer:
 
   def index(self):
     lastCleanoffTime = datetime.datetime.now()
+    print "Indexing beginning at: " + str(lastCleanoffTime)
     while True:
       currentTime = datetime.datetime.now()
       timeDiff = currentTime - lastCleanoffTime
 
-      # Every 1800 seconds or 30 minutes we would like to purge old currency deals
+      # Every 1800 seconds or 30 minutes we would like to purge old currency deals and update rates from poe.ninja
 
       if timeDiff.total_seconds() > 1800:
         self.removeOldDeals()
         lastCleanoffTime = datetime.datetime.now()
         print "Purged entries at : " + str(lastCleanoffTime)
+        self.updateWithNinjaRates()
 
       apiUrlModified = self.apiUrl if self.changeId == None else self.apiUrl + '?id=' + self.changeId
       request = urllib2.Request(apiUrlModified)
