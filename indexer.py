@@ -175,85 +175,109 @@ class Indexer:
     cursor.close()
     dbconn.close()
 
+  # Returns the listed price of an item, returns 0.0 if no prices are listed
+
+  def getItemPrice(self, item, stash):
+    askingPrice = 0.0
+
+    # First check stash global buyout price
+
+    stashTokens = stash['stash'].split(' ')
+
+    if len(stashTokens) == 3 and (stashTokens[0] == '~b/o' or stashTokens[0] == '~price') and stashTokens[2] == 'chaos':
+      amount = stashTokens[1]
+
+      if not isfloat(amount):
+        return askingPrice
+
+      askingPrice = float(amount)
+
+    # Second check item buyout price. If it exists it will overwrite stash buyout
+
+    if 'note' in item:
+      notes = item['note'].split(' ')
+
+      if len(notes) == 3 and (notes[0] == '~b/o' or notes[0] == '~price') and notes[2] == 'chaos':
+        amount = notes[1]
+
+        if not isfloat(amount):
+          return askingPrice
+
+        askingPrice = float(amount)
+
+    return askingPrice
+
   def processLeaguestone(self, typeLine, stash, item, itemDeals):
+
+    # Remove the added string in typeLine if it exists
+
+    typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
+    if typeLine.startswith(typeLinePrefix):
+      typeLine = typeLine[len(typeLinePrefix):]
+
     typeLineTokens = typeLine.split(' ')
     typeIndex = typeLineTokens.index('Leaguestone')
     leaguestoneType = typeLineTokens[typeIndex - 1] + ' ' + 'Leaguestone'
 
     if leaguestoneType in self.leaguestones:
-      if 'note' in item:
-        notes = item['note'].split(' ')
+      askingPrice = self.getItemPrice(item, stash)
 
-        # Only care about buyouts or fixed priced items, and only chaos orb buyouts
+      if askingPrice == 0.0:
+        return
 
-        if len(notes) == 3 and (notes[0] == '~b/o' or notes[0] == '~price') and notes[2] == 'chaos':
-          askingPrice = notes[1]
+      # Modifying properties so that placeholder %x strings are replaced with actual values
 
-          if not isfloat(askingPrice):
-            return
+      modifiedProperties = []
+      for prop in item['properties']:
 
-          if float(askingPrice) == 0.0:
-            return
+        # If the leaguestones have these mods, skip them
 
-          # Modifying properties so that placeholder %x strings are replaced with actual values
+        if prop['name'].startswith('Can only be used in Areas with Monster Level') and prop['name'].endswith('or below'):
+          return
+        if prop['name'].startswith('Can only be used in Areas with Monster Level between'):
+          return
 
-          modifiedProperties = []
-          for prop in item['properties']:
-
-            # If the leaguestones have these mods, skip them
-
-            if prop['name'].startswith('Can only be used in Areas with Monster Level') and prop['name'].endswith('or below'):
-              return
-            if prop['name'].startswith('Can only be used in Areas with Monster Level between'):
-              return
-
-            propString = ''
-            if 'values' in prop and len(prop['values']) > 0:
-              nameTokens = prop['name'].split(' ')
-              modTokens = []
-              index = 0
-              for token in nameTokens:
-                if token.startswith('%'):
-                  modTokens.append(prop['values'][index][0])
-                  index += 1
-                else:
-                  modTokens.append(token)
-              propString = ' '.join(modTokens)
+        propString = ''
+        if 'values' in prop and len(prop['values']) > 0:
+          nameTokens = prop['name'].split(' ')
+          modTokens = []
+          index = 0
+          for token in nameTokens:
+            if token.startswith('%'):
+              modTokens.append(prop['values'][index][0])
+              index += 1
             else:
-              propString = prop['name']
-            modifiedProperties.append(propString)
+              modTokens.append(token)
+          propString = ' '.join(modTokens)
+        else:
+          propString = prop['name']
+        modifiedProperties.append(propString)
 
-          # Mod object will contain all modifiers information on the item
+      # Mod object will contain all modifiers information on the item
 
-          mods = {}
-          mods['implicitMods'] = item['implicitMods']
-          mods['properties'] = modifiedProperties
-          if 'explicitMods' in item:
-            mods['explicitMods'] = item['explicitMods']
+      mods = {}
+      mods['implicitMods'] = item['implicitMods']
+      mods['properties'] = modifiedProperties
+      if 'explicitMods' in item:
+        mods['explicitMods'] = item['explicitMods']
 
-          # Remove the added string in typeLine if it exists
-
-          typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
-          if typeLine.startswith(typeLinePrefix):
-            typeLine = typeLine[len(typeLinePrefix):]
-
-          askingPrice = float(askingPrice)
-          avgPrice = self.leaguestones[leaguestoneType]
-          if askingPrice <= avgPrice:
-            new_deal = {}
-            new_deal['league'] = self.league
-            new_deal['charName'] = stash['lastCharacterName']
-            new_deal['itemName'] = typeLine
-            new_deal['mods'] = json.dumps(mods)
-            new_deal['askingPrice'] = askingPrice
-            new_deal['avgPrice'] = avgPrice
-            new_deal['profit'] = avgPrice - askingPrice
-            new_deal['stock'] = 1
-            new_deal['note'] = item['note']
-            new_deal['stashName'] = stash['stash']
-            new_deal['x'] = item['x'] + 1
-            new_deal['y'] = item['y'] + 1
-            self.itemDeals.append(new_deal)
+      askingPrice = float(askingPrice)
+      avgPrice = self.leaguestones[leaguestoneType]
+      if askingPrice <= avgPrice:
+        new_deal = {}
+        new_deal['league'] = self.league
+        new_deal['charName'] = stash['lastCharacterName']
+        new_deal['itemName'] = typeLine
+        new_deal['mods'] = json.dumps(mods)
+        new_deal['askingPrice'] = askingPrice
+        new_deal['avgPrice'] = avgPrice
+        new_deal['profit'] = avgPrice - askingPrice
+        new_deal['stock'] = 1
+        new_deal['note'] = item['note'] if 'note' in item else ''
+        new_deal['stashName'] = stash['stash']
+        new_deal['x'] = item['x'] + 1
+        new_deal['y'] = item['y'] + 1
+        self.itemDeals.append(new_deal)
 
   def processStashes(self, stashes):
     for stash in stashes:
