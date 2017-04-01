@@ -16,7 +16,7 @@
     $('#price', _template).html('Price: ' + deal['askingprice'] + ' , Market: ' + deal['avgprice'] + ' , Profit: ' + deal['profit']);
     $('#stock', _template).html('Stacksize: ' + deal['stock']);
 
-    $('#single-purchase-msg', _template).val('@' + deal['charname'] + ' Hi, I would like to buy your ' + deal['itemname'] + ' in ' + deal['league'] + ' (stash tab "' + deal['stashname'] + '"; position: left ' + deal['x'] + ', top ' + deal['y'] + ')');
+    $('#single-purchase-msg', _template).val('@' + deal['charname'] + ' Hi, I would like to buy your ' + deal['itemname'] + ' for ' + Math.floor(deal['askingprice']) + ' chaos in ' + deal['league'] + ' (stash tab "' + deal['stashname'] + '"; position: left ' + deal['x'] + ', top ' + deal['y'] + ')');
     $('#single-purchase-msg', _template).on("click", function() {
       $(this).select();
     });
