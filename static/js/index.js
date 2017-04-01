@@ -19,6 +19,7 @@
     $('#single-purchase-msg', _template).val('@' + deal['charname'] + ' Hi, I would like to buy your ' + deal['itemname'] + ' for ' + Math.floor(deal['askingprice']) + ' chaos in ' + deal['league'] + ' (stash tab "' + deal['stashname'] + '"; position: left ' + deal['x'] + ', top ' + deal['y'] + ')');
     $('#single-purchase-msg', _template).on("click", function() {
       $(this).select();
+      document.execCommand('copy');
     });
 
     $('#closeDeal', _template).on('click', function() {
@@ -40,6 +41,7 @@
     $('#single-purchase-msg', _template).val("@" + deal['charname'] + " Hi, I'd like to buy your " + deal['offeringamount'] + " " + deal['currencyname'] + " for my " + deal['askingamount'] + " " + deal['askingcurrency'] + " in " + deal['league'] + ".");
     $('#single-purchase-msg', _template).on("click", function() {
       $(this).select();
+      document.execCommand('copy');
     });
 
     var multiplier = Math.floor(deal['stock'] / deal['offeringamount']);
@@ -49,6 +51,7 @@
     $('#stock-purchase-msg', _template).val("@" + deal['charname'] + " Hi, I'd like to buy your " + multi_offeringamount + " " + deal['currencyname'] + " for my " + multi_askingamount + " " + deal['askingcurrency'] + " in " + deal['league'] + ".");
     $('#stock-purchase-msg', _template).on("click", function() {
       $(this).select();
+      document.execCommand('copy');
     });
 
     $('#closeDeal', _template).on('click', function() {
