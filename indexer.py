@@ -6,6 +6,7 @@ import psycopg2
 import datetime
 import math
 from StringIO import StringIO
+from marketPrices import ItemList
 
 def isfloat(values):
   try:
@@ -54,6 +55,7 @@ class Indexer:
 
     # Request for the latest rates
 
+    self.itemList = ItemList()
     self.updateWithNinjaRates()
 
     # Update rates that have shared keys
@@ -80,6 +82,10 @@ class Indexer:
       self.currency_rates[shared] = self.currency_rates['coin']
 
   def updateWithNinjaRates(self):
+
+    self.itemPrices = self.itemList.getAllItems()
+    self.itemPrices.update(self.leaguestones)
+
     self.currentDate = time.strftime('%Y-%m-%d', time.gmtime())
     ratesUrlModified = self.ninjaRatesUrl + self.currentDate
     request = urllib2.Request(ratesUrlModified)
@@ -207,19 +213,13 @@ class Indexer:
 
     return askingPrice
 
-  def processLeaguestone(self, typeLine, stash, item, itemDeals):
-
-    # Remove the added string in typeLine if it exists
-
-    typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
-    if typeLine.startswith(typeLinePrefix):
-      typeLine = typeLine[len(typeLinePrefix):]
-
+  def processItem(self, typeLine, stash, item, itemDeals):
     typeLineTokens = typeLine.split(' ')
-    typeIndex = typeLineTokens.index('Leaguestone')
-    leaguestoneType = typeLineTokens[typeIndex - 1] + ' ' + 'Leaguestone'
+    if 'Leaguestone' in typeLineTokens:
+      typeIndex = typeLineTokens.index('Leaguestone')
+      typeLine = typeLineTokens[typeIndex - 1] + ' ' + 'Leaguestone'
 
-    if leaguestoneType in self.leaguestones:
+    if typeLine in self.itemPrices:
       askingPrice = self.getItemPrice(item, stash)
 
       if askingPrice == 0.0:
@@ -228,51 +228,60 @@ class Indexer:
       # Modifying properties so that placeholder %x strings are replaced with actual values
 
       modifiedProperties = []
-      for prop in item['properties']:
+      if 'properties' in item:
+        for prop in item['properties']:
 
-        # If the leaguestones have these mods, skip them
+          # If the leaguestones have these mods, skip them
 
-        if prop['name'].startswith('Can only be used in Areas with Monster Level') and prop['name'].endswith('or below'):
-          return
-        if prop['name'].startswith('Can only be used in Areas with Monster Level between'):
-          return
+          if prop['name'].startswith('Can only be used in Areas with Monster Level') and prop['name'].endswith('or below'):
+            return
+          if prop['name'].startswith('Can only be used in Areas with Monster Level between'):
+            return
 
-        propString = ''
-        if 'values' in prop and len(prop['values']) > 0:
-          nameTokens = prop['name'].split(' ')
-          modTokens = []
-          index = 0
-          for token in nameTokens:
-            if token.startswith('%'):
-              modTokens.append(prop['values'][index][0])
-              index += 1
+          propString = ''
+          if 'values' in prop and len(prop['values']) > 0:
+
+            # If there is only one property and the value cannot be placed in a placeholder, simply append value to the end
+
+            if not ('%' in prop['name']) and len(prop['values']) == 1:
+              propString = prop['name'] + ': ' + prop['values'][0][0]
             else:
-              modTokens.append(token)
-          propString = ' '.join(modTokens)
-        else:
-          propString = prop['name']
-        modifiedProperties.append(propString)
+              nameTokens = prop['name'].split(' ')
+              modTokens = []
+              index = 0
+              for token in nameTokens:
+                if token.startswith('%'):
+                  modTokens.append(prop['values'][index][0])
+                  index += 1
+                else:
+                  modTokens.append(token)
+              propString = ' '.join(modTokens)
+          else:
+            propString = prop['name']
+          modifiedProperties.append(propString)
 
       # Mod object will contain all modifiers information on the item
 
       mods = {}
-      mods['implicitMods'] = item['implicitMods']
+      mods['implicitMods'] = item['implicitMods'] if 'implicitMods' in item else []
       mods['properties'] = modifiedProperties
-      if 'explicitMods' in item:
-        mods['explicitMods'] = item['explicitMods']
+      mods['explicitMods'] = item['explicitMods'] if 'explicitMods' in item else []
 
       askingPrice = float(askingPrice)
-      avgPrice = self.leaguestones[leaguestoneType]
-      if askingPrice <= avgPrice:
+      avgPrice = self.itemPrices[typeLine]
+
+      # For leaguestones we want to buy at average price, for other items we want a better margin
+
+      if (askingPrice <= avgPrice and 'Leaguestone' in typeLine) or (askingPrice < avgPrice and avgPrice - askingPrice >= 1.0):
         new_deal = {}
         new_deal['league'] = self.league
         new_deal['charName'] = stash['lastCharacterName']
-        new_deal['itemName'] = typeLine
+        new_deal['itemName'] = ' '.join(typeLineTokens)
         new_deal['mods'] = json.dumps(mods)
         new_deal['askingPrice'] = askingPrice
         new_deal['avgPrice'] = avgPrice
         new_deal['profit'] = avgPrice - askingPrice
-        new_deal['stock'] = 1
+        new_deal['stock'] = item['stackSize'] if 'stackSize' in item else 1
         new_deal['note'] = item['note'] if 'note' in item else ''
         new_deal['stashName'] = stash['stash']
         new_deal['x'] = item['x'] + 1
@@ -299,8 +308,14 @@ class Indexer:
             # typeLine is the displaying name of the item, in this case the currency's official name in-game
 
             typeLine = item['typeLine']
-            if 'Leaguestone' in typeLine:
-              self.processLeaguestone(typeLine, stash, item, itemDeals)
+
+            # Remove the added string in typeLine if it exists
+            typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
+            if typeLine.startswith(typeLinePrefix):
+              typeLine = typeLine[len(typeLinePrefix):]
+
+            if typeLine in self.itemPrices:
+              self.processItem(typeLine, stash, item, itemDeals)
             if typeLine in self.currency_names:
               currencyName = self.currency_names[typeLine]
 

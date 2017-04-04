@@ -2,6 +2,11 @@
   "apiUrl" : "http://api.pathofexile.com/public-stash-tabs",
   "ninjaApiUrl" : "http://api.poe.ninja/api/Data/GetStats",
   "ninjaRatesUrl" : "http://api.poe.ninja/api/Data/GetCurrencyOverview?league=Hardcore%20Legacy&date=",
+  "ninjaRatesProphecies" : "http://api.poe.ninja/api/Data/GetProphecyOverview?league=Hardcore%20Legacy&date=",
+  "ninjaRatesDivCards" : "http://api.poe.ninja/api/Data/GetDivinationCardsOverview?league=Hardcore%20Legacy&date=",
+  "ninjaRatesUniqueMaps" : "http://cdn.poe.ninja/api/Data/GetUniqueMapOverview?league=Hardcore%20Legacy",
+  "ninjaRatesMaps" : "http://api.poe.ninja/api/Data/GetMapOverview?league=Hardcore%20Legacy&date=",
+  "ninjaRatesUniqueJewels" : "http://cdn.poe.ninja/api/Data/GetUniqueJewelOverview?league=Hardcore%20Legacy",
   "league"  : "Hardcore Legacy",
   "threshold" : 1.0,
   "delay" : 2
