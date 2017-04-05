@@ -266,6 +266,8 @@ class Indexer:
       mods['implicitMods'] = item['implicitMods'] if 'implicitMods' in item else []
       mods['properties'] = modifiedProperties
       mods['explicitMods'] = item['explicitMods'] if 'explicitMods' in item else []
+      mods['prophecyText'] = item['prophecyText'] if 'prophecyText' in item else ''
+      mods['prophecyDiffText'] = item['prophecyDiffText'] if 'prophecyDiffText' in item else ''
 
       askingPrice = float(askingPrice)
       avgPrice = self.itemPrices[typeLine]
