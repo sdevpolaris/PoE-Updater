@@ -28,17 +28,21 @@ class ItemList:
     if status == 200:
       ratesJson = json.load(resp)
       for line in ratesJson['lines']:
+        itemName = line['name']
+        value = line['chaosValue']
+
+        # Update prices to non foil prices of the same item
+
+        if itemName in itemList and value < itemList[itemName]:
+          itemList[itemName] = value
 
         # Only care about items with 2.0 or higher chaos market price
 
         if line['chaosValue'] > 2.0:
-          itemName = line['name']
-
           if itemName.startswith('Vessel of Vinktar'):
             continue
 
-          value = line['chaosValue']
-          itemList[itemName] = value if (not itemName in itemList) or (itemList[itemName] >= value) else itemList[itemName]
+          itemList[itemName] = value
 
   # Retrieve a dict of all wanted items and their market average prices
 

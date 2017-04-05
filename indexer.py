@@ -213,7 +213,7 @@ class Indexer:
 
     return askingPrice
 
-  def processItem(self, typeLine, stash, item, itemDeals):
+  def processItem(self, typeLine, extended, stash, item, itemDeals):
     typeLineTokens = typeLine.split(' ')
     if 'Leaguestone' in typeLineTokens:
       typeIndex = typeLineTokens.index('Leaguestone')
@@ -275,10 +275,11 @@ class Indexer:
       # For leaguestones we want to buy at average price, for other items we want a better margin
 
       if (askingPrice <= avgPrice and 'Leaguestone' in typeLine) or (askingPrice < avgPrice and avgPrice - askingPrice >= 1.0):
+        finalName = ' '.join(typeLineTokens)
         new_deal = {}
         new_deal['league'] = self.league
         new_deal['charName'] = stash['lastCharacterName']
-        new_deal['itemName'] = ' '.join(typeLineTokens)
+        new_deal['itemName'] = finalName if extended == None else finalName + ' ' + extended
         new_deal['mods'] = json.dumps(mods)
         new_deal['askingPrice'] = askingPrice
         new_deal['avgPrice'] = avgPrice
@@ -303,21 +304,25 @@ class Indexer:
 
         for item in items:
 
-          # Only match items belonging to the specified league
+          # Only match items belonging to the specified league and not corrupted
 
-          if item['league'] == self.league:
+          if item['league'] == self.league and not item['corrupted']:
 
             # typeLine is the displaying name of the item, in this case the currency's official name in-game
 
             typeLine = item['typeLine']
+            itemName = item['name']
 
             # Remove the added string in typeLine if it exists
             typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
-            if typeLine.startswith(typeLinePrefix):
+            if typeLine.startswith(typeLinePrefix) and len(itemName) == 0:
               typeLine = typeLine[len(typeLinePrefix):]
+              self.processItem(typeLine, None, stash, item, itemDeals)
+            if len(itemName) > 0:
+              if itemName.startswith(typeLinePrefix):
+                itemName = itemName[len(typeLinePrefix):]
+              self.processItem(itemName, typeLine, stash, item, itemDeals)
 
-            if typeLine in self.itemPrices:
-              self.processItem(typeLine, stash, item, itemDeals)
             if typeLine in self.currency_names:
               currencyName = self.currency_names[typeLine]
 
