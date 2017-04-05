@@ -7,6 +7,11 @@
   "ninjaRatesUniqueMaps" : "http://cdn.poe.ninja/api/Data/GetUniqueMapOverview?league=Hardcore%20Legacy",
   "ninjaRatesMaps" : "http://api.poe.ninja/api/Data/GetMapOverview?league=Hardcore%20Legacy&date=",
   "ninjaRatesUniqueJewels" : "http://cdn.poe.ninja/api/Data/GetUniqueJewelOverview?league=Hardcore%20Legacy",
+  "ninjaRatesEssences" : "http://api.poe.ninja/api/Data/GetEssenceOverview?league=Hardcore%20Legacy&date=",
+  "ninjaRatesAccessories" : "http://cdn.poe.ninja/api/Data/GetUniqueAccessoryOverview?league=Hardcore%20Legacy",
+  "ninjaRatesArmours" : "http://cdn.poe.ninja/api/Data/GetUniqueArmourOverview?league=Hardcore%20Legacy",
+  "ninjaRatesWeapons" : "http://cdn.poe.ninja/api/Data/GetUniqueWeaponOverview?league=Hardcore%20Legacy",
+  "ninjaRatesFlasks" : "http://cdn.poe.ninja/api/Data/GetUniqueFlaskOverview?league=Hardcore%20Legacy",
   "league"  : "Hardcore Legacy",
   "threshold" : 1.0,
   "delay" : 2

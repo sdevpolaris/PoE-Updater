@@ -13,6 +13,11 @@ class ItemList:
       self.ninjaRatesUniqueMapsUrl = configs['ninjaRatesUniqueMaps']
       self.ninjaRatesMapsUrl = configs['ninjaRatesMaps']
       self.ninjaRatesUniqueJewelsUrl = configs['ninjaRatesUniqueJewels']
+      self.ninjaRatesEssencesUrl = configs['ninjaRatesEssences']
+      self.ninjaRatesAccessoriesUrl = configs['ninjaRatesAccessories']
+      self.ninjaRatesArmoursUrl = configs['ninjaRatesArmours']
+      self.ninjaRatesWeaponsUrl = configs['ninjaRatesWeapons']
+      self.ninjaRatesFlasksUrl = configs['ninjaRatesFlasks']
 
   def retrieveRates(self, ratesUrl, itemList, date):
     ratesUrlModified = ratesUrl + date if not (date == None) else ratesUrl
@@ -28,7 +33,12 @@ class ItemList:
 
         if line['chaosValue'] > 2.0:
           itemName = line['name']
-          itemList[itemName] = line['chaosValue']
+
+          if itemName.startswith('Vessel of Vinktar'):
+            continue
+
+          value = line['chaosValue']
+          itemList[itemName] = value if (not itemName in itemList) or (itemList[itemName] >= value) else itemList[itemName]
 
   # Retrieve a dict of all wanted items and their market average prices
 
@@ -40,4 +50,9 @@ class ItemList:
     self.retrieveRates(self.ninjaRatesUniqueMapsUrl, itemList, None)
     self.retrieveRates(self.ninjaRatesMapsUrl, itemList, currentDate)
     self.retrieveRates(self.ninjaRatesUniqueJewelsUrl, itemList, None)
+    self.retrieveRates(self.ninjaRatesEssencesUrl, itemList, currentDate)
+    self.retrieveRates(self.ninjaRatesAccessoriesUrl, itemList, None)
+    self.retrieveRates(self.ninjaRatesArmoursUrl, itemList, None)
+    self.retrieveRates(self.ninjaRatesWeaponsUrl, itemList, None)
+    self.retrieveRates(self.ninjaRatesFlasksUrl, itemList, None)
     return itemList
