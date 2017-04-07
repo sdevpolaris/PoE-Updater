@@ -39,7 +39,7 @@ class ItemList:
         # Only care about items with 2.0 or higher chaos market price
 
         if line['chaosValue'] > 2.0:
-          if itemName.startswith('Vessel of Vinktar'):
+          if itemName.startswith('Vessel of Vinktar') or itemName.startswith("Ventor's Gamble"):
             continue
 
           itemList[itemName] = value
