@@ -16,6 +16,13 @@ def isfloat(values):
   except ValueError:
     return False
 
+def isfloatSingle(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False
+
 class Indexer:
   def __init__(self):
 
@@ -193,7 +200,7 @@ class Indexer:
     if len(stashTokens) == 3 and (stashTokens[0] == '~b/o' or stashTokens[0] == '~price') and stashTokens[2] == 'chaos':
       amount = stashTokens[1]
 
-      if not isfloat(amount):
+      if not isfloatSingle(amount):
         return askingPrice
 
       askingPrice = float(amount)
@@ -206,7 +213,7 @@ class Indexer:
       if len(notes) == 3 and (notes[0] == '~b/o' or notes[0] == '~price') and notes[2] == 'chaos':
         amount = notes[1]
 
-        if not isfloat(amount):
+        if not isfloatSingle(amount):
           return askingPrice
 
         askingPrice = float(amount)
