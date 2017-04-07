@@ -216,7 +216,7 @@ class Indexer:
   def getProfitMargin(self, marketPrice):
     return 1.0 if marketPrice * 0.1 <= 1.0 else marketPrice * 0.1
 
-  def processItem(self, typeLine, stash, item, itemDeals):
+  def processItem(self, typeLine, stash, item, itemDeals, extendedName):
     typeLineTokens = typeLine.split(' ')
     if 'Leaguestone' in typeLineTokens:
       typeIndex = typeLineTokens.index('Leaguestone')
@@ -271,6 +271,7 @@ class Indexer:
       mods['explicitMods'] = item['explicitMods'] if 'explicitMods' in item else []
       mods['prophecyText'] = item['prophecyText'] if 'prophecyText' in item else ''
       mods['prophecyDiffText'] = item['prophecyDiffText'] if 'prophecyDiffText' in item else ''
+      mods['corrupted'] = item['corrupted']
 
       askingPrice = float(askingPrice)
       avgPrice = self.itemPrices[typeLine]
@@ -281,7 +282,7 @@ class Indexer:
         new_deal = {}
         new_deal['league'] = self.league
         new_deal['charName'] = stash['lastCharacterName']
-        new_deal['itemName'] = ' '.join(typeLineTokens)
+        new_deal['itemName'] = ' '.join(typeLineTokens) + extendedName
         new_deal['mods'] = json.dumps(mods)
         new_deal['askingPrice'] = askingPrice
         new_deal['avgPrice'] = avgPrice
@@ -313,13 +314,20 @@ class Indexer:
             # typeLine is the displaying name of the item, in this case the currency's official name in-game
 
             typeLine = item['typeLine']
+            itemName = item['name']
 
             # Remove the added string in typeLine if it exists
             typeLinePrefix = '<<set:MS>><<set:M>><<set:S>>'
             if typeLine.startswith(typeLinePrefix):
               typeLine = typeLine[len(typeLinePrefix):]
 
-            self.processItem(typeLine, stash, item, itemDeals)
+            self.processItem(typeLine, stash, item, itemDeals, '')
+
+            if itemName.startswith(typeLinePrefix):
+              itemName = itemName[len(typeLinePrefix):]
+
+            self.processItem(itemName, stash, item, itemDeals, ' ' + typeLine)
+
             if typeLine in self.currency_names:
               currencyName = self.currency_names[typeLine]
 

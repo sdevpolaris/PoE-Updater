@@ -12,7 +12,29 @@
     _template.removeClass('hidden');
     $('#league-note', _template).html('League: ' + deal['league'] + ', Character Name: ' + deal['charname']);
     $('#item', _template).html(deal['itemname']);
-    $('#mods', _template).html(deal['mods']);
+
+    var mods = $('#mods', _template);
+    var itemMods = JSON.parse(deal['mods']);
+    for (var key in itemMods) {
+      var modLine = itemMods[key];
+      if (itemMods.hasOwnProperty(key)) {
+        if (modLine === '' || modLine.length == 0) {
+          continue;
+        }
+        var modDiv = document.createElement('div');
+        if (!Array.isArray(modLine)) {
+          $(modDiv).html(key + ': ' + modLine).appendTo(mods);
+        } else {
+          var modDivWrap = $(modDiv);
+          modDivWrap.html(key + ':').appendTo(mods);
+          for (var m = 0; m < modLine.length; m++) {
+            var div = document.createElement('div');
+            $(div).html(modLine[m]).appendTo(modDivWrap);
+          }
+        }
+      }
+    }
+
     $('#price', _template).html('Price: ' + deal['askingprice'] + ' , Market: ' + deal['avgprice'] + ' , Profit: ' + deal['profit']);
     $('#stock', _template).html('Stacksize: ' + deal['stock']);
 
