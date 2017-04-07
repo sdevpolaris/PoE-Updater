@@ -213,6 +213,9 @@ class Indexer:
 
     return askingPrice
 
+  def getProfitMargin(self, marketPrice):
+    return 1.0 if marketPrice * 0.1 <= 1.0 else marketPrice * 0.1
+
   def processItem(self, typeLine, stash, item, itemDeals):
     typeLineTokens = typeLine.split(' ')
     if 'Leaguestone' in typeLineTokens:
@@ -274,7 +277,7 @@ class Indexer:
 
       # For leaguestones we want to buy at average price, for other items we want a better margin
 
-      if (askingPrice <= avgPrice and 'Leaguestone' in typeLine) or (askingPrice < avgPrice and avgPrice - askingPrice >= 1.0):
+      if (askingPrice <= avgPrice and 'Leaguestone' in typeLine) or (askingPrice < avgPrice and avgPrice - askingPrice >= self.getProfitMargin(avgPrice)):
         new_deal = {}
         new_deal['league'] = self.league
         new_deal['charName'] = stash['lastCharacterName']
