@@ -221,7 +221,7 @@ class Indexer:
     return askingPrice
 
   def getProfitMargin(self, marketPrice):
-    return 1.0 if marketPrice * 0.1 <= 1.0 else marketPrice * 0.1
+    return 2.0 if marketPrice * 0.1 <= 2.0 else marketPrice * 0.1
 
   def processItem(self, typeLine, stash, item, itemDeals, extendedName):
     typeLineTokens = typeLine.split(' ')

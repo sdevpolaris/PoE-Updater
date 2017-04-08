@@ -15,6 +15,14 @@
 
     var mods = $('#mods', _template);
     var itemMods = JSON.parse(deal['mods']);
+
+    // Flag any item deals that are corrupted and are not leaguestones
+
+    if (itemMods['corrupted'] && deal['itemname'].indexOf('Leaguestone') == -1) {
+      _template.removeClass('alert-info');
+      _template.addClass('alert-danger');
+    }
+
     for (var key in itemMods) {
       var modLine = itemMods[key];
       if (itemMods.hasOwnProperty(key)) {
@@ -93,7 +101,13 @@
     var itemDeals = result['items'];
 
     if (currencyDeals.length > 0 || itemDeals.length > 0) {
-      notifySound.play();
+
+      // Only play notification sound when item deals exist
+
+      if (itemDeals.length > 0) {
+        notifySound.play();
+      }
+
       var separator = $('<hr />');
       dealsList.prepend(separator);
     }
