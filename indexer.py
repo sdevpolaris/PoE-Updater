@@ -220,6 +220,11 @@ class Indexer:
 
     return askingPrice
 
+  def isCorruptionExcluded(self, itemName, corrupted):
+    exclusions = ["Voll's Vision", "Drillneck"]
+
+    return itemName in exclusions and corrupted
+
   def getProfitMargin(self, marketPrice):
     return 2.0 if marketPrice * 0.1 <= 2.0 else marketPrice * 0.1
 
@@ -332,6 +337,9 @@ class Indexer:
 
             if itemName.startswith(typeLinePrefix):
               itemName = itemName[len(typeLinePrefix):]
+
+            if self.isCorruptionExcluded(itemName, item['corrupted']):
+              continue
 
             self.processItem(itemName, stash, item, itemDeals, ' ' + typeLine)
 
